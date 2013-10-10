@@ -24,10 +24,8 @@ public class MeshTester {
 		minMf = null;
 		minDist = Mathf.Infinity;
 		foreach (BoundsDistance mfDists in mfHitBounds) {
-#if false
 			if (minDist < mfDists.distance)
 				break;
-#endif
 			
 			MeshFilter mf = mfDists.mf;
 			Vector3 rayOrigin = mf.transform.InverseTransformPoint(rayWorld.origin);
