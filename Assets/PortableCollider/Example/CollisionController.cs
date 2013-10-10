@@ -5,14 +5,17 @@ using System.Collections.Generic;
 public class CollisionController : MonoBehaviour {
 	public string tagCollider = "Collider";
 	public float radius = 0.5f;
+	public float seconds = 1f;
 	
 	private Camera _targetCamera;
 	private MeshFilter[] _meshFilters;
+	private Color _initColor;
 
 	// Use this for initialization
 	void Start () {
 		_targetCamera = Camera.main;
 		_meshFilters = GetComponentsInChildren<MeshFilter>();
+		_initColor = _meshFilters[0].renderer.sharedMaterial.color;
 	}
 	
 	// Update is called once per frame
@@ -30,13 +33,12 @@ public class CollisionController : MonoBehaviour {
 		}
 		
 		Debug.Log(string.Format("Hit on {0}", mf.gameObject.name));
-		StartCoroutine(ChangeColorForWhile(mf.gameObject.renderer, 1.0f));
+		StartCoroutine(ChangeColorForWhile(mf.gameObject.renderer, seconds));
 	}
 	
-	static IEnumerator ChangeColorForWhile(Renderer r, float seconds) {
-		var prevColor = r.material.color;
+	IEnumerator ChangeColorForWhile(Renderer r, float seconds) {
 		r.material.color = Color.green;
 		yield return new WaitForSeconds(seconds);
-		r.material.color = prevColor;
+		r.material.color = _initColor;
 	}
 }
