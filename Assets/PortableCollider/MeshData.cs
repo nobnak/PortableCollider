@@ -4,7 +4,7 @@ using System.Linq;
 using System;
 
 public class MeshTester {
-	public static bool hitObject(MeshFilter[] meshFilters, Ray rayWorld, out MeshFilter minMf, out float minDist) {
+	public static bool hitObject(MeshFilter[] meshFilters, Ray rayWorld, out MeshFilter minMf, out TriangleTester.HitRes minHit) {
 		List<BoundsDistance> mfHitBounds = new List<BoundsDistance>();
 		foreach (var mf in meshFilters) {
 			if (!mf.gameObject.activeInHierarchy)
@@ -22,7 +22,8 @@ public class MeshTester {
 		
 		bool found = false;
 		minMf = null;
-		minDist = Mathf.Infinity;
+		minHit = default(TriangleTester.HitRes);
+		var minDist = Mathf.Infinity;
 		foreach (BoundsDistance mfDists in mfHitBounds) {
 			if (minDist < mfDists.distance)
 				break;
@@ -31,13 +32,15 @@ public class MeshTester {
 			Vector3 rayOrigin = mf.transform.InverseTransformPoint(rayWorld.origin);
 			Vector3 rayDirection = mf.transform.worldToLocalMatrix * (Vector4) rayWorld.direction;
 			Mesh m = mf.sharedMesh;
-			float dist;
-			if (!TriangleTester.hitTriangleAll(rayOrigin, rayDirection, m.vertices, m.triangles, out dist))
+			TriangleTester.HitRes hit;
+			if (!TriangleTester.hitTriangleAll(rayOrigin, rayDirection, m.vertices, m.triangles, out hit))
 				continue;
 			
 			found = true;
+			var dist = hit.t;
 			if (dist < minDist) {
 				minDist = dist;
+				minHit = hit;
 				minMf = mf;
 			}
 		}
@@ -53,12 +56,13 @@ public class MeshTester {
 
 public class TriangleTester {
 	public static int hitTriangle(Vector3 rayOrigin, Vector3 rayDirection,
-			Vector3[] triVerts, int[] indices, int indicesOffset, ref HitRes hit) {
+			Vector3[] triVerts, int[] indices, int indicesOffset, out HitRes hit) {
 		Vector3 edge1 = triVerts[indices[indicesOffset + 1]] - triVerts[indices[indicesOffset + 0]];
 		Vector3 edge2 = triVerts[indices[indicesOffset + 2]] - triVerts[indices[indicesOffset + 0]];
 		
 		Vector3 p = Vector3.Cross(rayDirection, edge2);
 		float det = Vector3.Dot(p, edge1);
+		hit = default(HitRes);
 		
 		if (-Mathf.Epsilon < det && det < Mathf.Epsilon)
 			return 0;
@@ -82,17 +86,19 @@ public class TriangleTester {
 		return 1;
 	}
 	public static bool hitTriangleAll(Vector3 rayOrigin, Vector3 rayDirection, 
-			Vector3[] vertices, int[] triangles, out float minDist) {
+			Vector3[] vertices, int[] triangles, out HitRes minHit) {
 		bool found = false;
-		minDist = Mathf.Infinity;
-		TriangleTester.HitRes hit = new TriangleTester.HitRes();
-		
+		float minDist = Mathf.Infinity;
+		minHit = default(HitRes);
+		HitRes hit;		
 		for (int triOffset = 0; triOffset < triangles.Length; triOffset+=3) {
-			if (hitTriangle(rayOrigin, rayDirection, vertices, triangles, triOffset, ref hit) == 0)
+			if (hitTriangle(rayOrigin, rayDirection, vertices, triangles, triOffset, out hit) == 0)
 				continue;
-			
+
+			hit.i = triOffset;
 			if (hit.t < minDist) {
 				minDist = hit.t;
+				minHit = hit;
 				found = true;
 			}
 		}
@@ -128,5 +134,6 @@ public class TriangleTester {
 	
 	public struct HitRes {
 		public float t, u, v;
+		public int i;
 	}
 }

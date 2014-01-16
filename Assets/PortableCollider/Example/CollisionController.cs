@@ -26,13 +26,13 @@ public class CollisionController : MonoBehaviour {
 		Ray rayFromCamera = _targetCamera.ScreenPointToRay(Input.mousePosition);
 		
 		MeshFilter mf;
-		float dist;
-		if (!MeshTester.hitObject(_meshFilters, rayFromCamera, out mf, out dist)) {
+		TriangleTester.HitRes hit;
+		if (!MeshTester.hitObject(_meshFilters, rayFromCamera, out mf, out hit)) {
 			//Debug.Log("Not found");
 			return;
 		}
 		
-		Debug.Log(string.Format("Hit on {0}", mf.gameObject.name));
+		Debug.Log(string.Format("Hit on tri {1} in mesh {0}", mf.gameObject.name, hit.i));
 		StartCoroutine(ChangeColorForWhile(mf.gameObject.renderer, seconds));
 	}
 	
