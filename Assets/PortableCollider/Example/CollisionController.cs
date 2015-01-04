@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using nobnak.Geometry;
 
 public class CollisionController : MonoBehaviour {
 	public string tagCollider = "Collider";
